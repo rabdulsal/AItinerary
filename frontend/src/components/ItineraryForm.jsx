@@ -4,6 +4,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { Formik, Form, Field } from 'formik'
 import * as Yup from 'yup'
 import Select from 'react-select';
+import { useRef } from 'react';
 
 const validationSchema = Yup.object({
   location: Yup.string().required('Location is required'),
@@ -16,10 +17,15 @@ const validationSchema = Yup.object({
 })
 
 const ItineraryForm = ({ onSubmit }) => {
-  const { isLoaded } = useLoadScript({
+  const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_KEY,
-    libraries: ['places'],
+    libraries: ['places']
   });
+
+  // Add this temporarily for debugging
+  console.log('Loaded API Key:', import.meta.env.VITE_GOOGLE_MAPS_KEY);
+
+  const autocompleteRef = useRef(null);
 
   const activityOptions = [
     { value: 'restaurants', label: 'Restaurants' },
@@ -29,30 +35,37 @@ const ItineraryForm = ({ onSubmit }) => {
     { value: 'attractions', label: 'Tourist Attractions' },
   ];
 
+  const initialValues = {
+    location: '',
+    placeId: '',
+    startDate: '',
+    endDate: '',
+    activities: [],
+    budget: 100,
+    preferOutdoor: false,
+  };
+
+  if (!isLoaded) return <div>Loading...</div>;
+
   return (
     <Formik
-      initialValues={{
-        location: '',
-        placeId: '',
-        startDate: new Date(),
-        endDate: new Date(),
-        activities: [],
-        budget: 100,
-        preferOutdoor: false,
-      }}
+      initialValues={initialValues}
       validationSchema={validationSchema}
       onSubmit={onSubmit}
     >
       {({ setFieldValue, values, errors, touched }) => (
         <Form className="space-y-4">
-          {isLoaded && (
+          <div className="relative">
             <Autocomplete
               onLoad={autocomplete => {
-                autocomplete.addListener('place_changed', () => {
-                  const place = autocomplete.getPlace();
+                autocompleteRef.current = autocomplete;
+              }}
+              onPlaceChanged={() => {
+                if (autocompleteRef.current) {
+                  const place = autocompleteRef.current.getPlace();
                   setFieldValue('location', place.formatted_address);
                   setFieldValue('placeId', place.place_id);
-                });
+                }
               }}
             >
               <input
@@ -61,7 +74,7 @@ const ItineraryForm = ({ onSubmit }) => {
                 className="w-full p-2 border rounded"
               />
             </Autocomplete>
-          )}
+          </div>
 
           <div className="flex gap-4">
             <div>
