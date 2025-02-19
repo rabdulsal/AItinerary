@@ -84,7 +84,7 @@ const ItineraryForm = ({ onSubmit }) => {
     <div className="min-h-screen flex items-center justify-center bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 bg-gray-800 p-8 rounded-lg shadow-lg">
         <h2 className="text-center text-3xl font-extrabold text-white">
-          Travel Itinerary Generator
+          Activity Preferences
         </h2>
         
         <Formik

@@ -3,7 +3,7 @@ import ItineraryForm from './components/ItineraryForm'
 import ItineraryTable from './components/ItineraryTable'
 
 function App() {
-  const [itinerary, setItinerary] = useState(null)
+  const [itineraryData, setItineraryData] = useState(null)
 
   const handleItinerarySubmit = async (values) => {
     try {
@@ -16,18 +16,17 @@ function App() {
       });
       
       const data = await response.json();
-      console.log('Response:', data);
-      setItinerary(data)
+      setItineraryData(data);
     } catch (error) {
       console.error('Error generating itinerary:', error)
     }
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Travel Itinerary Generator</h1>
+    <div className="min-h-screen bg-gray-900">
+      <h1 className="text-center text-4xl font-bold mb-4">Travel Itinerary Generator</h1>
       <ItineraryForm onSubmit={handleItinerarySubmit} />
-      {itinerary && <ItineraryTable activities={itinerary.activities} />}
+      {itineraryData && <ItineraryTable itinerary={itineraryData} />}
     </div>
   )
 }
