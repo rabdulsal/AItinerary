@@ -5,16 +5,18 @@ import ItineraryTable from './components/ItineraryTable'
 function App() {
   const [itinerary, setItinerary] = useState(null)
 
-  const handleItinerarySubmit = async (formData) => {
+  const handleItinerarySubmit = async (values) => {
     try {
-      const response = await fetch('http://localhost:5000/api/generate-itinerary', {
+      const response = await fetch('http://localhost:8080/api/generate-itinerary', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
-      })
-      const data = await response.json()
+        body: JSON.stringify(values)
+      });
+      
+      const data = await response.json();
+      console.log('Response:', data);
       setItinerary(data)
     } catch (error) {
       console.error('Error generating itinerary:', error)
