@@ -8,11 +8,17 @@ import random
 
 load_dotenv()
 
+# Add debug prints
+print("Environment variables loaded")
+api_key = os.getenv('GOOGLE_MAPS_API_KEY')
+print(f"Google Maps API Key found: {bool(api_key)}")  # Prints True/False without exposing the key
+print(f"API Key length: {len(api_key) if api_key else 0}")  # Additional verification
+
 app = Flask(__name__, static_folder='../frontend/dist', static_url_path='')
 CORS(app)
 
 # Initialize Google Maps client with environment variable
-gmaps = googlemaps.Client(key=os.getenv('GOOGLE_MAPS_API_KEY'))
+gmaps = googlemaps.Client(key=api_key)
 
 # Define average costs for different activity types
 ACTIVITY_COSTS = {
