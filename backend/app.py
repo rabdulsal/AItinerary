@@ -22,8 +22,8 @@ CORS(app,resources={r"/api/*": {"origins": '*'}})
 # Initialize Google Maps client
 gmaps = Client(key=os.getenv('GOOGLE_MAPS_KEY'))
 
-def get_places_for_activity(location, activity_type, radius=5000):
-    """Get places from Google Places API based on activity type."""
+def get_places_for_activity(location, activity_type, used_places, radius=5000):
+    """Get places from Google Places API based on activity type, excluding already used places."""
     try:
         # Convert activity types to Google Places types
         activity_map = {
@@ -45,23 +45,25 @@ def get_places_for_activity(location, activity_type, radius=5000):
             type=place_type
         )
 
-        # Extract relevant information
+        # Filter out already used places
         places = []
         for place in places_result.get('results', []):
-            places.append({
-                'name': place.get('name'),
-                'address': place.get('vicinity'),
-                'rating': place.get('rating', 'N/A'),
-                'place_id': place.get('place_id')
-            })
+            place_id = place.get('place_id')
+            if place_id not in used_places:
+                places.append({
+                    'name': place.get('name'),
+                    'address': place.get('vicinity'),
+                    'rating': place.get('rating', 'N/A'),
+                    'place_id': place_id
+                })
 
         return places
     except Exception as e:
         print(f"Error fetching places: {str(e)}")
         return []
 
-def generate_daily_schedule(location, activities, date):
-    """Generate a schedule for one day."""
+def generate_daily_schedule(location, activities, date, used_places):
+    """Generate a schedule for one day, tracking used places."""
     schedule = []
     current_time = datetime.strptime('09:00', '%H:%M')  # Start at 9 AM
     
@@ -74,11 +76,13 @@ def generate_daily_schedule(location, activities, date):
     
     # Generate activities throughout the day
     for activity_type in activities:
-        places = get_places_for_activity(lat_lng, activity_type)
+        places = get_places_for_activity(lat_lng, activity_type, used_places)
         if places:
             place = random.choice(places)
+            used_places.add(place['place_id'])  # Track this place as used
             
             schedule.append({
+                'date': date.strftime('%Y-%m-%d'),  # Add date to each activity
                 'time': current_time.strftime('%I:%M %p'),
                 'activity': activity_type.capitalize(),
                 'location': f"{place['name']} - {place['address']}",
@@ -107,6 +111,9 @@ def generate_itinerary():
         start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
         end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
         
+        # Set to track used place IDs across all days
+        used_places = set()
+        
         # Generate schedule for each day
         itinerary = []
         current_date = start_date
@@ -114,10 +121,17 @@ def generate_itinerary():
             daily_schedule = generate_daily_schedule(
                 location=location,
                 activities=activities,
-                date=current_date
+                date=current_date,
+                used_places=used_places  # Pass the set of used places
             )
             
-            itinerary.extend(daily_schedule)
+            # Only add the day if we found activities
+            if daily_schedule:
+                itinerary.extend(daily_schedule)
+            else:
+                # If we run out of unique places, stop generating more days
+                break
+            
             current_date += timedelta(days=1)
 
         return jsonify({

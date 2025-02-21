@@ -24,9 +24,6 @@ const ItineraryForm = ({ onSubmit }) => {
     libraries: ['places']
   });
 
-  // Add this temporarily for debugging
-  console.log('Loaded API Key:', import.meta.env.VITE_GOOGLE_MAPS_KEY);
-
   const autocompleteRef = useRef(null);
 
   const activityOptions = [
