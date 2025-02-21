@@ -12,7 +12,7 @@ app = Flask(__name__, static_folder='../frontend/dist')
 CORS(app)
 
 # Initialize Google Maps client
-gmaps = Client(key=os.getenv('GOOGLE_MAPS_KEY'))
+gmaps = Client(key=os.getenv('GOOGLE_MAPS_API_KEY'))
 
 # Define average costs for different activity types
 ACTIVITY_COSTS = {
