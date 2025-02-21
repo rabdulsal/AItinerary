@@ -22,6 +22,15 @@ CORS(app,resources={r"/api/*": {"origins": '*'}})
 # Initialize Google Maps client
 gmaps = Client(key=os.getenv('GOOGLE_MAPS_KEY'))
 
+# Define average costs for different activity types
+ACTIVITY_COSTS = {
+    'restaurants': 30,  # Average cost per person for a meal
+    'museums': 25,      # Average museum admission
+    'shopping': 50,     # Average shopping activity cost
+    'attractions': 35,  # Average tourist attraction admission
+    'hiking': 10,       # Cost for parking/trail pass
+}
+
 def get_places_for_activity(location, activity_type, used_places, radius=5000):
     """Get places from Google Places API based on activity type, excluding already used places."""
     try:
@@ -54,7 +63,8 @@ def get_places_for_activity(location, activity_type, used_places, radius=5000):
                     'name': place.get('name'),
                     'address': place.get('vicinity'),
                     'rating': place.get('rating', 'N/A'),
-                    'place_id': place_id
+                    'place_id': place_id,
+                    'cost': ACTIVITY_COSTS.get(activity_type, 30)  # Default cost if not specified
                 })
 
         return places
@@ -62,10 +72,11 @@ def get_places_for_activity(location, activity_type, used_places, radius=5000):
         print(f"Error fetching places: {str(e)}")
         return []
 
-def generate_daily_schedule(location, activities, date, used_places):
-    """Generate a schedule for one day, tracking used places."""
+def generate_daily_schedule(location, activities, date, used_places, budget):
+    """Generate a schedule for one day, respecting budget constraints."""
     schedule = []
-    current_time = datetime.strptime('09:00', '%H:%M')  # Start at 9 AM
+    current_time = datetime.strptime('09:00', '%H:%M')
+    remaining_budget = budget
     
     # Get coordinates for the location
     geocode_result = gmaps.geocode(location)
@@ -74,23 +85,37 @@ def generate_daily_schedule(location, activities, date, used_places):
     
     lat_lng = geocode_result[0]['geometry']['location']
     
-    # Generate activities throughout the day
+    # Shuffle activities to get different combinations each time
+    random.shuffle(activities)
+    
+    # Try to add activities while we have budget and time
     for activity_type in activities:
+        # Check if we have enough budget for this activity
+        activity_cost = ACTIVITY_COSTS.get(activity_type, 30)
+        if activity_cost > remaining_budget:
+            continue
+            
+        # Check if we have enough time (don't start activities after 8 PM)
+        if current_time.hour >= 20:
+            break
+            
         places = get_places_for_activity(lat_lng, activity_type, used_places)
         if places:
             place = random.choice(places)
-            used_places.add(place['place_id'])  # Track this place as used
+            used_places.add(place['place_id'])
             
             schedule.append({
-                'date': date.strftime('%Y-%m-%d'),  # Add date to each activity
+                'date': date.strftime('%Y-%m-%d'),
                 'time': current_time.strftime('%I:%M %p'),
                 'activity': activity_type.capitalize(),
                 'location': f"{place['name']} - {place['address']}",
-                'rating': place['rating']
+                'rating': place['rating'],
+                'cost': activity_cost
             })
             
-            # Add 2 hours for each activity plus 30 minutes travel time
-            current_time += timedelta(hours=2, minutes=30)
+            # Update remaining budget and time
+            remaining_budget -= activity_cost
+            current_time += timedelta(hours=2, minutes=30)  # Activity + travel time
     
     return schedule
 
@@ -104,6 +129,8 @@ def generate_itinerary():
         data = request.get_json()
         location = data.get('location')
         activities = data.get('activities', [])
+        budget = float(data.get('budget', 100))  # Daily budget
+        
         # Parse ISO format dates from frontend
         start_date_str = data.get('startDate').split('T')[0]  # Get only the date part
         end_date_str = data.get('endDate').split('T')[0]  # Get only the date part
@@ -122,7 +149,8 @@ def generate_itinerary():
                 location=location,
                 activities=activities,
                 date=current_date,
-                used_places=used_places  # Pass the set of used places
+                used_places=used_places,
+                budget=budget  # Pass the daily budget
             )
             
             # Only add the day if we found activities
