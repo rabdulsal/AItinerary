@@ -1,7 +1,19 @@
-# Root .gitignore
-.env
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+venv/
+.env
+.env.local
+
+# Node
+node_modules/
+dist/
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
 
 # Logs
 logs
@@ -12,8 +24,6 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
 dist-ssr
 *.local
 

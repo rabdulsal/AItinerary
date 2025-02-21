@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, make_response
+from flask import Flask, request, jsonify, make_response, send_from_directory
 from flask_cors import CORS
 from dotenv import load_dotenv
 import os
@@ -8,16 +8,8 @@ import random
 
 load_dotenv()
 
-app = Flask(__name__)
-# CORS(app)
-# CORS(app,origins="http://localhost:5173")
-CORS(app,resources={r"/api/*": {"origins": '*'}})
-#         "methods": ["GET", "POST", "OPTIONS"],
-#         "allow_headers": ["Content-Type", "Authorization", "Accept", "Origin"],
-#         "supports_credentials": True,
-#         "max_age": 3600
-#     }
-# })
+app = Flask(__name__, static_folder='../frontend/dist')
+CORS(app)
 
 # Initialize Google Maps client
 gmaps = Client(key=os.getenv('GOOGLE_MAPS_KEY'))
@@ -119,6 +111,14 @@ def generate_daily_schedule(location, activities, date, used_places, budget):
     
     return schedule
 
+@app.route('/')
+def serve():
+    return send_from_directory(app.static_folder, 'index.html')
+
+@app.route('/<path:path>')
+def static_proxy(path):
+    return send_from_directory(app.static_folder, path)
+
 @app.route('/api/generate-itinerary', methods=['POST', 'OPTIONS'])
 def generate_itinerary():
     # Handle preflight OPTIONS request
@@ -172,4 +172,5 @@ def generate_itinerary():
         }), 400
 
 if __name__ == '__main__':
-    app.run(debug=True, port=8080)
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host='0.0.0.0', port=port)

@@ -7,7 +7,7 @@ function App() {
 
   const handleItinerarySubmit = async (values) => {
     try {
-      const response = await fetch('http://localhost:8080/api/generate-itinerary', {
+      const response = await fetch('/api/generate-itinerary', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -18,7 +18,7 @@ function App() {
       const data = await response.json();
       setItineraryData(data);
     } catch (error) {
-      console.error('Error generating itinerary:', error)
+      console.error('Error generating itinerary:', error);
     }
   }
 
