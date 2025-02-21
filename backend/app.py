@@ -1,18 +1,18 @@
-from flask import Flask, request, jsonify, make_response, send_from_directory
+from flask import Flask, request, jsonify, make_response, send_from_directory, send_file
 from flask_cors import CORS
 from dotenv import load_dotenv
 import os
 from datetime import datetime, timedelta
-from googlemaps import Client
+import googlemaps
 import random
 
 load_dotenv()
 
-app = Flask(__name__, static_folder='../frontend/dist')
+app = Flask(__name__, static_folder='../frontend/dist', static_url_path='')
 CORS(app)
 
-# Initialize Google Maps client
-gmaps = Client(key=os.getenv('GOOGLE_MAPS_API_KEY'))
+# Initialize Google Maps client with environment variable
+gmaps = googlemaps.Client(key=os.getenv('GOOGLE_MAPS_API_KEY'))
 
 # Define average costs for different activity types
 ACTIVITY_COSTS = {
@@ -111,13 +111,14 @@ def generate_daily_schedule(location, activities, date, used_places, budget):
     
     return schedule
 
-@app.route('/')
-def serve():
-    return send_from_directory(app.static_folder, 'index.html')
-
+# Catch all routes to serve React app
+@app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
-def static_proxy(path):
-    return send_from_directory(app.static_folder, path)
+def serve(path):
+    if path and os.path.exists(os.path.join(app.static_folder, path)):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return send_from_directory(app.static_folder, 'index.html')
 
 @app.route('/api/generate-itinerary', methods=['POST', 'OPTIONS'])
 def generate_itinerary():
