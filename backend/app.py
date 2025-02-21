@@ -39,12 +39,14 @@ def get_places_for_activity(location, activity_type, used_places, radius=5000):
         if not place_type:
             return []
 
-        # Search for places
+        # Add debug logging
+        print(f"Searching for {activity_type} near {location}")
         places_result = gmaps.places_nearby(
             location=location,
             radius=radius,
             type=place_type
         )
+        print(f"Found {len(places_result.get('results', []))} places")
 
         # Filter out already used places
         places = []
@@ -62,6 +64,9 @@ def get_places_for_activity(location, activity_type, used_places, radius=5000):
         return places
     except Exception as e:
         print(f"Error fetching places: {str(e)}")
+        # Add more detailed error information
+        import traceback
+        print(traceback.format_exc())
         return []
 
 def generate_daily_schedule(location, activities, date, used_places, budget):
