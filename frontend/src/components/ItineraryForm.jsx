@@ -78,120 +78,111 @@ const ItineraryForm = ({ onSubmit }) => {
   if (!isLoaded) return <div>Loading...</div>;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-gray-800 p-8 rounded-lg shadow-lg">
-        <h2 className="text-center text-3xl font-extrabold text-white">
-          Activity Preferences
-        </h2>
-        
-        <Formik
-          initialValues={{
-            location: '',
-            placeId: '',
-            startDate: '',
-            endDate: '',
-            activities: [],
-            budget: 100,
-            preferOutdoor: false,
-          }}
-          validationSchema={validationSchema}
-          onSubmit={onSubmit}
-        >
-          {({ setFieldValue, values, errors, touched }) => (
-            <Form className="mt-8 space-y-6">
-              <div className="rounded-md shadow-sm space-y-4">
-                <div>
-                  <label className="text-white block mb-2">Location</label>
-                  <Autocomplete
-                    onLoad={autocomplete => {
-                      autocompleteRef.current = autocomplete;
-                    }}
-                    onPlaceChanged={() => {
-                      if (autocompleteRef.current) {
-                        const place = autocompleteRef.current.getPlace();
-                        setFieldValue('location', place.formatted_address);
-                        setFieldValue('placeId', place.place_id);
-                        setInputValue(place.formatted_address);
-                      }
-                    }}
-                  >
-                    <input
-                      type="text"
-                      value={inputValue}
-                      onChange={(e) => setInputValue(e.target.value)}
-                      placeholder="Enter location"
-                      className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    />
-                  </Autocomplete>
-                </div>
-
-                <div>
-                  <label className="text-white block mb-2">Activities</label>
-                  <Select
-                    isMulti
-                    options={activityOptions}
-                    className="text-white"
-                    styles={customSelectStyles}
-                    onChange={(selected) => 
-                      setFieldValue('activities', selected.map(option => option.value))
-                    }
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-white block mb-2">Start Date</label>
-                    <DatePicker
-                      selected={values.startDate}
-                      onChange={date => setFieldValue('startDate', date)}
-                      className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-white block mb-2">End Date</label>
-                    <DatePicker
-                      selected={values.endDate}
-                      onChange={date => setFieldValue('endDate', date)}
-                      className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label className="text-white block mb-2">Budget (per day)</label>
-                <input
-                  type="range"
-                  min="0"
-                  max="1000"
-                  value={values.budget}
-                  onChange={e => setFieldValue('budget', e.target.value)}
-                  className="w-full"
-                />
-                <span>${values.budget}</span>
-              </div>
-
-              <div>
-                <label className="text-white block mb-2">
-                  <input
-                    type="checkbox"
-                    checked={values.preferOutdoor}
-                    onChange={e => setFieldValue('preferOutdoor', e.target.checked)}
-                  />
-                  Prefer Outdoor Activities
-                </label>
-              </div>
-
-              <button
-                type="submit"
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+    <div className="bg-gray-800 rounded-lg shadow-lg p-4">
+      <h2 className="text-xl font-bold text-white mb-4">
+        Travel Preferences
+      </h2>
+      
+      <Formik
+        initialValues={{
+          location: '',
+          placeId: '',
+          startDate: '',
+          endDate: '',
+          activities: [],
+          budget: 100,
+        }}
+        onSubmit={onSubmit}
+      >
+        {({ setFieldValue, values }) => (
+          <Form className="space-y-4">
+            <div>
+              <label className="text-white text-sm font-medium block mb-2">
+                Location
+              </label>
+              <Autocomplete
+                onLoad={autocomplete => {
+                  autocompleteRef.current = autocomplete;
+                }}
+                onPlaceChanged={() => {
+                  if (autocompleteRef.current) {
+                    const place = autocompleteRef.current.getPlace();
+                    setFieldValue('location', place.formatted_address);
+                    setFieldValue('placeId', place.place_id);
+                    setInputValue(place.formatted_address);
+                  }
+                }}
               >
-                Generate Itinerary
-              </button>
-            </Form>
-          )}
-        </Formik>
-      </div>
+                <input
+                  type="text"
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  placeholder="Enter location"
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </Autocomplete>
+            </div>
+
+            <div>
+              <label className="text-white text-sm font-medium block mb-2">
+                Activities
+              </label>
+              <Select
+                isMulti
+                options={activityOptions}
+                className="text-white"
+                styles={customSelectStyles}
+                onChange={(selected) => 
+                  setFieldValue('activities', selected.map(option => option.value))
+                }
+              />
+            </div>
+
+            <div>
+              <label className="text-white text-sm font-medium block mb-2">
+                Daily Budget ($)
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="10"
+                value={values.budget}
+                onChange={(e) => setFieldValue('budget', e.target.value)}
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="text-white text-sm font-medium block mb-2">
+                Start Date
+              </label>
+              <DatePicker
+                selected={values.startDate}
+                onChange={date => setFieldValue('startDate', date)}
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="text-white text-sm font-medium block mb-2">
+                End Date
+              </label>
+              <DatePicker
+                selected={values.endDate}
+                onChange={date => setFieldValue('endDate', date)}
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded-md text-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            >
+              Generate Itinerary
+            </button>
+          </Form>
+        )}
+      </Formik>
     </div>
   );
 };
