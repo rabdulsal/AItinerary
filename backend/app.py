@@ -10,7 +10,7 @@ load_dotenv()
 
 app = Flask(__name__, static_folder='../frontend/dist', static_url_path='')
 CORS(app)
-print(os.getenv('GOOGLE_MAPS_API_KEY'))
+
 # Initialize Google Maps client with environment variable
 gmaps = googlemaps.Client(key=os.getenv('GOOGLE_MAPS_API_KEY'))
 
