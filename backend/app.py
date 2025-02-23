@@ -71,14 +71,30 @@ def get_places_for_activity(location, activity_type, used_places, radius=5000):
         for place in places_result.get('results', []):
             place_id = place.get('place_id')
             if place_id not in used_places:
+                price_level = place.get('price_level', None)  # 0-4, where 0 is free and 4 is very expensive
+                
+                # Calculate estimated cost based on price_level if available
+                estimated_cost = ACTIVITY_COSTS.get(activity_type, 30)
+                if price_level is not None:
+                    # Adjust base cost by price level
+                    cost_multiplier = {
+                        0: 0,      # Free
+                        1: 0.5,    # Inexpensive
+                        2: 1.0,    # Moderate
+                        3: 1.5,    # Expensive
+                        4: 2.0     # Very Expensive
+                    }.get(price_level, 1.0)
+                    estimated_cost *= cost_multiplier
+                
                 places.append({
                     'name': place.get('name'),
                     'address': place.get('vicinity'),
                     'rating': place.get('rating', 'N/A'),
                     'place_id': place_id,
-                    'cost': ACTIVITY_COSTS.get(activity_type, 30)  # Default cost if not specified
+                    'cost': round(estimated_cost, 2),
+                    'price_level': price_level  # Include this in the response
                 })
-
+        print(f"Places: {places}")
         return places
     except Exception as e:
         print(f"Error fetching places: {str(e)}")

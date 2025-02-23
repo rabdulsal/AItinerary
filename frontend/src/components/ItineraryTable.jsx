@@ -1,8 +1,9 @@
-const ItineraryTable = ({ itinerary }) => {
+const ItineraryTable = ({ itinerary = { data: [], message: "" } }) => {
   if (!itinerary || !itinerary.data) {
     return null;
   }
 
+  console.log("Itinerary before total cost calculation, very beginning", itinerary)
   // Group activities by date
   const groupedActivities = itinerary.data.reduce((acc, activity) => {
     // Extract date from time string (assuming format like "09:00 AM")
@@ -24,6 +25,37 @@ const ItineraryTable = ({ itinerary }) => {
       day: 'numeric'
     });
   };
+
+  // Helper function to get price level display
+  const getPriceLevelDisplay = (priceLevel) => {
+    if (priceLevel === null || priceLevel === undefined) return '—';
+    const symbols = {
+      0: 'Free',
+      1: '$',
+      2: '$$',
+      3: '$$$',
+      4: '$$$$'
+    };
+    return symbols[priceLevel] || '—';
+  };
+
+  // Calculate total cost using itinerary.data
+  const totalCost = Array.isArray(itinerary.data) 
+    ? itinerary.data.reduce((sum, item) => {
+        const itemCost = item && typeof item.cost === 'number' ? item.cost : 0;
+        return sum + itemCost;
+      }, 0)
+    : 0;
+
+    console.log("Itinerary after total cost calculation", itinerary)
+  // Early return if no itinerary or not an array
+  if (!itinerary || !Array.isArray(itinerary.data)) {
+    return (
+      <div className="bg-gray-800 rounded-lg shadow-lg p-4 text-white">
+        No itinerary data available
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto mt-8 p-6 bg-gray-800 rounded-lg shadow-xl">
@@ -49,6 +81,12 @@ const ItineraryTable = ({ itinerary }) => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">
                     Rating
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider">
+                    Price Level
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-200 uppercase tracking-wider">
+                    Est. Cost
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-gray-800 divide-y divide-gray-700">
@@ -64,7 +102,13 @@ const ItineraryTable = ({ itinerary }) => {
                       {item.location}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                      {item.rating}
+                      {item.rating !== 'N/A' ? `${Number(item.rating).toFixed(1)} ⭐` : '—'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                      {getPriceLevelDisplay(item.price_level)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300 text-right">
+                      {typeof item.cost === 'number' ? `$${item.cost.toFixed(2)}` : '—'}
                     </td>
                   </tr>
                 ))}
@@ -73,6 +117,16 @@ const ItineraryTable = ({ itinerary }) => {
           </div>
         </div>
       ))}
+      {totalCost > 0 && (
+        <div className="mt-8">
+          <h3 className="text-xl font-semibold text-white mb-4 text-right">
+            Total Estimated Cost:
+          </h3>
+          <div className="text-right">
+            ${totalCost.toFixed(2)}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
