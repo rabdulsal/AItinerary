@@ -15,7 +15,19 @@ print(f"Google Maps API Key found: {bool(api_key)}")  # Prints True/False withou
 print(f"API Key length: {len(api_key) if api_key else 0}")  # Additional verification
 
 app = Flask(__name__, static_folder='../frontend/dist', static_url_path='')
-CORS(app)
+
+# More permissive CORS configuration
+CORS(app, resources={
+    r"/api/*": {
+        "origins": [
+            "http://localhost:5173",
+            "http://localhost:5000",
+            "https://aitinerary-9dac6c982f44.herokuapp.com"  # Your Heroku domain
+        ],  # Allow all origins in development
+        "methods": ["GET", "POST", "OPTIONS"],  # Explicitly allow methods
+        "allow_headers": ["Content-Type", "Authorization"]  # Allow necessary headers
+    }
+})
 
 # Initialize Google Maps client with environment variable
 gmaps = googlemaps.Client(key=api_key)
@@ -133,9 +145,13 @@ def serve(path):
 
 @app.route('/api/generate-itinerary', methods=['POST', 'OPTIONS'])
 def generate_itinerary():
-    # Handle preflight OPTIONS request
+    # Add explicit OPTIONS handling
     if request.method == 'OPTIONS':
-        return make_response('', 204)
+        response = make_response()
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        response.headers.add('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
+        return response
     
     try:
         data = request.get_json()
@@ -184,5 +200,5 @@ def generate_itinerary():
         }), 400
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 8080))
+    port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)

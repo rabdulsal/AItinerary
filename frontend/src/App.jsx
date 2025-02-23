@@ -14,7 +14,11 @@ function App() {
         },
         body: JSON.stringify(values)
       });
-      
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
       setItineraryData(data);
     } catch (error) {
