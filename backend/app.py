@@ -141,7 +141,9 @@ def generate_daily_schedule(location, activities, date, used_places, budget):
                 'activity': activity_type.capitalize(),
                 'location': f"{place['name']} - {place['address']}",
                 'rating': place['rating'],
-                'cost': activity_cost
+                'cost': activity_cost,
+                'place_id': place['place_id'],
+                'price_level': place.get('price_level')
             })
             
             # Update remaining budget and time
@@ -214,6 +216,44 @@ def generate_itinerary():
         return jsonify({
             "error": str(e)
         }), 400
+
+@app.route('/api/place-details/<place_id>')
+def get_place_details(place_id):
+    try:
+        place = gmaps.place(place_id, fields=[
+            'name',
+            'formatted_address',
+            'formatted_phone_number',
+            'opening_hours',
+            'photo',
+            'rating',
+            'review',
+            'price_level',
+            'editorial_summary',
+            'geometry',
+            'type'
+        ])
+        
+        # Get the first photo if available
+        photo_url = None
+        if place['result'].get('photos'):
+            photo_reference = place['result']['photos'][0]['photo_reference']
+            photo_url = f"https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photo_reference={photo_reference}&key={api_key}"
+        
+        result = {
+            **place['result'],
+            'photo_url': photo_url
+        }
+        
+        # Add debug logging
+        print(f"Place details retrieved: {result}")
+        
+        return jsonify(result)
+    except Exception as e:
+        print(f"Error fetching place details: {str(e)}")  # Debug log
+        import traceback
+        print(traceback.format_exc())  # Print full stack trace
+        return jsonify({'error': str(e)}), 400
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))

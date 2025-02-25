@@ -1,9 +1,8 @@
-const ItineraryTable = ({ itinerary = { data: [], message: "" } }) => {
+const ItineraryTable = ({ itinerary = { data: [], message: "" }, onLocationClick }) => {
   if (!itinerary || !itinerary.data) {
     return null;
   }
 
-  console.log("Itinerary before total cost calculation, very beginning", itinerary)
   // Group activities by date
   const groupedActivities = itinerary.data.reduce((acc, activity) => {
     // Extract date from time string (assuming format like "09:00 AM")
@@ -91,15 +90,26 @@ const ItineraryTable = ({ itinerary = { data: [], message: "" } }) => {
               </thead>
               <tbody className="bg-gray-800 divide-y divide-gray-700">
                 {activities.map((item, index) => (
-                  <tr key={index}>
+                  <tr 
+                    key={index} 
+                    className="border-b border-gray-700 hover:bg-gray-700"
+                  >
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                       {item.time}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                       {item.activity}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                      {item.location}
+                    <td 
+                      className="px-4 py-2 cursor-pointer hover:text-blue-400"
+                      onClick={() => {
+                        console.log("Clicked location with place_id:", item.place_id);  // Debug log
+                        if (item.place_id) {
+                          onLocationClick(item.place_id);
+                        }
+                      }}
+                    >
+                      {item?.location || '—'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                       {item.rating !== 'N/A' ? `${Number(item.rating).toFixed(1)} ⭐` : '—'}

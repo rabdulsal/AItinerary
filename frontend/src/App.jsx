@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import ItineraryForm from './components/ItineraryForm'
 import ItineraryTable from './components/ItineraryTable'
+import LocationDetails from './components/LocationDetails'
 
 function App() {
-  const [itineraryData, setItineraryData] = useState(null)
+  const [itinerary, setItinerary] = useState(null)
+  const [selectedPlaceId, setSelectedPlaceId] = useState(null)
 
   const handleItinerarySubmit = async (values) => {
     try {
@@ -20,10 +22,24 @@ function App() {
       }
 
       const data = await response.json();
-      setItineraryData(data);
+      setItinerary(data);
     } catch (error) {
       console.error('Error generating itinerary:', error);
     }
+  }
+
+  const handleLocationClick = (placeId) => {
+    console.log("Location clicked with placeId:", placeId);
+    setSelectedPlaceId(placeId);
+  };
+
+  if (selectedPlaceId) {
+    return (
+      <LocationDetails 
+        placeId={selectedPlaceId} 
+        onBack={() => setSelectedPlaceId(null)} 
+      />
+    );
   }
 
   return (
@@ -35,8 +51,8 @@ function App() {
 
       {/* Right side - Table */}
       <div className="w-4/5 h-screen overflow-y-auto p-4">
-        {itineraryData ? (
-          <ItineraryTable itinerary={itineraryData} />
+        {itinerary ? (
+          <ItineraryTable itinerary={itinerary} onLocationClick={handleLocationClick} />
         ) : (
           <div className="h-full flex items-center justify-center">
             <div className="text-gray-400 text-xl text-center">
