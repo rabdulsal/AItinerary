@@ -9,19 +9,26 @@ function App() {
 
   const handleItinerarySubmit = async (values) => {
     try {
-      const response = await fetch('/api/generate-itinerary', {
+      const jsonData = JSON.stringify(values);
+      console.log('Submitting values:', jsonData); // Debug log
+      const response = await fetch('http://localhost:5001/api/generate-itinerary', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          // Add CORS headers
+          'Accept': 'application/json',
         },
-        body: JSON.stringify(values)
+        body: jsonData
       });
 
       if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Server error:', errorData); // Debug log
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
+      console.log('Received data:', data); // Debug log
       setItinerary(data);
     } catch (error) {
       console.error('Error generating itinerary:', error);

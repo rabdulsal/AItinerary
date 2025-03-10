@@ -77,6 +77,12 @@ const ItineraryForm = ({ onSubmit }) => {
   if (loadError) return <div>Error loading Google Maps</div>;
   if (!isLoaded) return <div>Loading...</div>;
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log('Form data being submitted:', formData);
+    onSubmit(formData);
+  };
+
   return (
     <div className="bg-gray-800 rounded-lg shadow-lg p-4">
       <h2 className="text-xl font-bold text-white mb-4">
