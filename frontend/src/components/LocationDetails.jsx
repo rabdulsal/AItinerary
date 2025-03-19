@@ -43,11 +43,11 @@ const LocationDetails = ({ placeId, onBack }) => {
             <img 
               src={details.photo_url} 
               alt={details.name}
-              className="w-full h-64 object-cover rounded-lg mb-6"
+              className="w-full h-85 object-cover rounded-lg mb-6"
             />
           )}
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <div>
               <h2 className="text-xl font-semibold mb-2">Details</h2>
               <p className="mb-2">
@@ -85,6 +85,20 @@ const LocationDetails = ({ placeId, onBack }) => {
               )}
             </div>
           </div>
+
+          {/* Google Maps Static Image */}
+          {details.geometry?.location && (
+            <div className="mt-8">
+              <h2 className="text-xl font-semibold mb-4">Location</h2>
+              <div className="w-full h-[400px] rounded-lg overflow-hidden">
+                <img
+                  src={`https://maps.googleapis.com/maps/api/staticmap?center=${details.geometry.location.lat},${details.geometry.location.lng}&zoom=15&size=800x400&markers=color:red%7C${details.geometry.location.lat},${details.geometry.location.lng}&key=${import.meta.env.VITE_GOOGLE_MAPS_KEY}`}
+                  alt={`Map of ${details.name}`}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

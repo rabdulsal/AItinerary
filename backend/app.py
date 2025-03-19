@@ -30,7 +30,6 @@ CORS(app, resources={
 })
 
 # Initialize Google Maps client with environment variable
-print(f"API Key: {api_key}")
 gmaps = googlemaps.Client(key=api_key)
 
 # Define average costs for different activity types
