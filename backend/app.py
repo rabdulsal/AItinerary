@@ -57,14 +57,11 @@ def get_places_for_activity(location, activity_type, used_places, radius=5000):
         if not place_type:
             return []
 
-        # Add debug logging
-        print(f"Searching for {activity_type} near {location}")
         places_result = gmaps.places_nearby(
             location=location,
             radius=radius,
             type=place_type
         )
-        print(f"Found {len(places_result.get('results', []))} places")
 
         # Filter out already used places
         places = []
@@ -94,7 +91,7 @@ def get_places_for_activity(location, activity_type, used_places, radius=5000):
                     'cost': round(estimated_cost, 2),
                     'price_level': price_level  # Include this in the response
                 })
-        print(f"Places: {places}")
+        
         return places
     except Exception as e:
         print(f"Error fetching places: {str(e)}")
@@ -207,7 +204,7 @@ def generate_itinerary():
                 break
             
             current_date += timedelta(days=1)
-
+        
         return jsonify({
             "message": "Itinerary generated successfully",
             "data": itinerary
@@ -244,9 +241,6 @@ def get_place_details(place_id):
             **place['result'],
             'photo_url': photo_url
         }
-        
-        # Add debug logging
-        print(f"Place details retrieved: {result}")
         
         return jsonify(result)
     except Exception as e:

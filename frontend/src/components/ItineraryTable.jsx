@@ -103,7 +103,6 @@ const ItineraryTable = ({ itinerary = { data: [], message: "" }, onLocationClick
                     <td 
                       className="px-4 py-2 cursor-pointer hover:text-blue-400"
                       onClick={() => {
-                        console.log("Clicked location with place_id:", item.place_id);  // Debug log
                         if (item.place_id) {
                           onLocationClick(item.place_id);
                         }
