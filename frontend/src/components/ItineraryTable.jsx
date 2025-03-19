@@ -1,4 +1,10 @@
+import { useState } from 'react';
+import RouteDetails from './RouteDetails';
+
 const ItineraryTable = ({ itinerary = { data: [], message: "" }, onLocationClick }) => {
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedActivities, setSelectedActivities] = useState([]);
+
   if (!itinerary || !itinerary.data) {
     return null;
   }
@@ -56,14 +62,41 @@ const ItineraryTable = ({ itinerary = { data: [], message: "" }, onLocationClick
     );
   }
 
+  // Handle route button click
+  const handleRouteClick = (date, activities) => {
+    setSelectedDate(date);
+    setSelectedActivities(activities);
+  };
+
+  // If a date is selected, show the route details
+  if (selectedDate) {
+    return (
+      <RouteDetails
+        activities={selectedActivities}
+        onBack={() => {
+          setSelectedDate(null);
+          setSelectedActivities([]);
+        }}
+      />
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto mt-8 p-6 bg-gray-800 rounded-lg shadow-xl">
       <h2 className="text-2xl font-bold text-white mb-4">Your Itinerary</h2>
       {Object.entries(groupedActivities).map(([date, activities]) => (
         <div key={date} className="mb-8">
-          <h3 className="text-xl font-semibold text-white mb-4 text-left">
-            {formatDate(date)}
-          </h3>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-semibold text-white text-left">
+              {formatDate(date)}
+            </h3>
+            <button
+              onClick={() => handleRouteClick(date, activities)}
+              className="px-4 py-2 bg-green-600 rounded-lg hover:bg-green-700 transition-colors text-white"
+            >
+              Route
+            </button>
+          </div>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-700">
               <thead className="bg-gray-700">

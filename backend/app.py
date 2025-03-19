@@ -132,6 +132,9 @@ def generate_daily_schedule(location, activities, date, used_places, budget):
             place = random.choice(places)
             used_places.add(place['place_id'])
             
+            # Get detailed place information including geometry
+            place_details = gmaps.place(place['place_id'], fields=['geometry'])
+            
             schedule.append({
                 'date': date.strftime('%Y-%m-%d'),
                 'time': current_time.strftime('%I:%M %p'),
@@ -140,7 +143,8 @@ def generate_daily_schedule(location, activities, date, used_places, budget):
                 'rating': place['rating'],
                 'cost': activity_cost,
                 'place_id': place['place_id'],
-                'price_level': place.get('price_level')
+                'price_level': place.get('price_level'),
+                'geometry': place_details['result'].get('geometry', {})  # Include geometry data
             })
             
             # Update remaining budget and time
